@@ -15,11 +15,26 @@ A minimal Subsonic CLI utility
 * Provide an interactive interface for browsing.
 * Scrobble tracks automatically.
 
+## Configuration
+
+By default, configuration is expected to live under
+`$XDG_CONFIG_HOME/aquamarine/config.yml`. Override this with `aquamarine -c
+<path_to_config> ...`
+
+Available fields:
+
+```yaml
+username: "user"                   # subsonic username
+password: "password"               # plain text subsonic password
+password_cmd: "echo password"      # alternative a shell command that returns the password to stdout
+host: "https://example.org"        # subsonic endpoint (without `/rest`)
+```
+
 ## Usage
 
 **Listing**:
 
-`aquamarine [artists|albums|songs] ls [<empty>|<album ID>|<track ID>]`
+`aquamarine -c <path_to_config> [artists|albums|songs] ls [<empty>|<album ID>|<track ID>]`
 
 Flags:
 
@@ -32,11 +47,11 @@ Usage of ls:
 
 **Scrobble:**
 
-`aquamarine scrobble <album/track ID>`
+`aquamarine -c <path_to_config> scrobble <album/track ID>`
 
 **Queue**:
 
-`aquamarine queue <album/track ID>`
+`aquamarine -c <path_to_config> queue <album/track ID>`
 
 ## Examples
 
