@@ -59,7 +59,7 @@ $ aquamarine albums ls "ar-182"
 ```
 
 The default output fields are `album id`, `album name`, `album year`, `album
-genre`, `track count`, `duration`, `artist id`.
+genre`, `track count`, `duration`, `artist id` (tab delimited).
 
 ### Listing tracks
 
@@ -70,14 +70,15 @@ $ aquamarine songs ls "al-462"
 ```
 
 The default output fields are `track id`, `track name`, `track number`, `disc
-number`, `file format`, `bit rate`, `duration`, `file size`, `album id`.
+number`, `file format`, `bit rate`, `duration`, `file size`, `album id` (tab
+delimited).
 
 ## Integration
 
 ### fzf
 
-See [./scripts/fzf_picker.sh](./scripts/fzf_picker.sh) for a sample script of
-how to use fzf as a simple interactive browser.
+See [./scripts/fzf_picker.sh](./scripts/fzf_picker.sh) for a sample script
+using fzf as a simple interactive browser.
 
 This allows you to select an artist and display their albums, the latter you
 can queue with `ctrl-a` and scrobble with `ctrl-s`. Alternative selecting an
