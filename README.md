@@ -1,6 +1,6 @@
 # aquamarine
 
-Minimal subsonic CLI utility
+A minimal Subsonic CLI utility
 
 ## What it does
 
