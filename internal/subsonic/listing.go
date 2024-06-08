@@ -9,8 +9,8 @@ import (
 	"time"
 )
 
-func ListSongsPretty(songs []Song) []byte {
-	t := []string{}
+func ListSongs(songs []Song) []byte {
+	text := []string{}
 	for _, i := range songs {
 		s := []string{
 			i.ID, i.Title, strconv.Itoa(i.Track),
@@ -21,31 +21,31 @@ func ListSongsPretty(songs []Song) []byte {
 			strconv.Itoa(i.Size%1024%1024) + "MB",
 			i.Parent,
 		}
-		t = append(t, strings.Join(s, "\t"))
+		text = append(text, strings.Join(s, "\t"))
 	}
-	return []byte(strings.Join(t, "\n"))
+	return []byte(strings.Join(text, "\n"))
 }
 
-func ListAlbumsPretty(albums []Album) []byte {
-	t := []string{}
+func ListAlbums(albums []Album) []byte {
+	text := []string{}
 	for _, i := range albums {
 		s := []string{
 			i.ID, i.Name, strconv.Itoa(i.Year), i.Genre,
 			strconv.Itoa(i.SongCount), fmt.Sprint(time.Duration(i.Duration * int(time.Second))),
 			i.Parent,
 		}
-		t = append(t, strings.Join(s, "\t"))
+		text = append(text, strings.Join(s, "\t"))
 	}
-	return []byte(strings.Join(t, "\n"))
+	return []byte(strings.Join(text, "\n"))
 }
 
-func ListArtistsPretty(artists []Artist) []byte {
-	t := []string{}
+func ListArtists(artists []Artist) []byte {
+	text := []string{}
 	for _, i := range artists {
 		s := []string{i.ID, i.Name, strconv.Itoa(i.AlbumCount)}
-		t = append(t, strings.Join(s, "\t"))
+		text = append(text, strings.Join(s, "\t"))
 	}
-	return []byte(strings.Join(t, "\n"))
+	return []byte(strings.Join(text, "\n"))
 }
 
 // Remove character indexing and get all artists

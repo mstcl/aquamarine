@@ -169,10 +169,10 @@ func (c *SubsonicConnection) GetArtists(sync bool, displayRaw bool, quiet bool) 
 		indexes := res.SubsonicResponse.Artists
 		artists = indexes.ExtractArtists()
 
-		return handleResponse(loc, displayRaw, quiet, ListArtistsPretty, artists)
+		return handleResponse(loc, displayRaw, quiet, ListArtists, artists)
 	}
 
-	return handleCache(loc, displayRaw, ListArtistsPretty, artists)
+	return handleCache(loc, displayRaw, ListArtists, artists)
 }
 
 // Get albums from an artist
@@ -203,10 +203,10 @@ func (c *SubsonicConnection) GetArtist(id string, sync bool, displayRaw bool, qu
 		// Encode and cache response
 		albums := res.SubsonicResponse.Artist.Albums
 
-		return handleResponse(loc, displayRaw, quiet, ListAlbumsPretty, albums)
+		return handleResponse(loc, displayRaw, quiet, ListAlbums, albums)
 	}
 
-	return handleCache(loc, displayRaw, ListAlbumsPretty, albums)
+	return handleCache(loc, displayRaw, ListAlbums, albums)
 }
 
 // Get songs from an album
@@ -237,10 +237,10 @@ func (c *SubsonicConnection) GetAlbum(id string, sync bool, displayRaw bool, qui
 		// Encode and cache response
 		songs := res.SubsonicResponse.Album.Songs
 
-		return handleResponse(loc, displayRaw, quiet, ListSongsPretty, songs)
+		return handleResponse(loc, displayRaw, quiet, ListSongs, songs)
 	}
 
-	return handleCache(loc, displayRaw, ListSongsPretty, songs)
+	return handleCache(loc, displayRaw, ListSongs, songs)
 }
 
 // Formats and constructs stream url, ignoring directories

@@ -14,11 +14,11 @@ import (
 )
 
 func Parse() error {
-	cFile := flag.String("c", file.Config, "Path to configuration file")
+	configFile := flag.String("c", file.Config, "Path to configuration file")
 
-	invalidSubcommandRootErr := "[ERROR] Usage: aquamarine [artists|albums|songs|scrobble|queue]"
-	invalidSubcommandChildErr := "[ERROR] Allowed subcommand: ls"
-	noIdProvidedErr := "[ERROR] Please provide an id as an argument."
+	invalidSubCmdErr := "[ERROR] Usage: aquamarine [artists|albums|songs|scrobble|queue]"
+	invalidSubCmdLsErr := "[ERROR] Allowed subcommand: ls"
+	noIDProvidedErr := "[ERROR] Please provide an id as an argument."
 
 	// flags for subcommand `ls`
 	lsCmd := flag.NewFlagSet("ls", flag.ExitOnError)
@@ -27,25 +27,25 @@ func Parse() error {
 	quiet := lsCmd.Bool("q", false, "Don't print to stdout")
 
 	if len(os.Args) < 2 {
-		return fmt.Errorf(invalidSubcommandRootErr)
+		return fmt.Errorf(invalidSubCmdErr)
 	}
 
-	cfg, err := config.Parse(*cFile)
+	config, err := config.Parse(*configFile)
 	if err != nil {
 		return err
 	}
 
 	c := subsonic.SubsonicConnection{
-		Username: cfg.Username,
-		Password: cfg.Password,
-		Host:     cfg.Host,
+		Username: config.Username,
+		Password: config.Password,
+		Host:     config.Host,
 	}
 
 	// Command tree
 	switch os.Args[1] {
 	case "artists":
 		if len(os.Args) < 3 {
-			return fmt.Errorf(invalidSubcommandChildErr)
+			return fmt.Errorf(invalidSubCmdLsErr)
 		}
 
 		_ = lsCmd.Parse(os.Args[3:])
@@ -58,7 +58,7 @@ func Parse() error {
 		fmt.Printf("%s\n", artists)
 	case "albums":
 		if len(os.Args) < 3 {
-			return fmt.Errorf(invalidSubcommandChildErr)
+			return fmt.Errorf(invalidSubCmdLsErr)
 		}
 
 		if err := lsCmd.Parse(os.Args[3:]); err != nil {
@@ -66,7 +66,7 @@ func Parse() error {
 		}
 
 		if len(os.Args) < 4 {
-			return fmt.Errorf(noIdProvidedErr)
+			return fmt.Errorf(noIDProvidedErr)
 		}
 
 		id := lsCmd.Args()[0]
@@ -79,7 +79,7 @@ func Parse() error {
 		fmt.Printf("%s\n", albums)
 	case "songs":
 		if len(os.Args) < 3 {
-			return fmt.Errorf(invalidSubcommandChildErr)
+			return fmt.Errorf(invalidSubCmdLsErr)
 		}
 
 		if err := lsCmd.Parse(os.Args[3:]); err != nil {
@@ -87,7 +87,7 @@ func Parse() error {
 		}
 
 		if len(os.Args) < 4 {
-			return fmt.Errorf(noIdProvidedErr)
+			return fmt.Errorf(noIDProvidedErr)
 		}
 
 		id := lsCmd.Args()[0]
@@ -100,7 +100,7 @@ func Parse() error {
 		fmt.Printf("%s\n", songs)
 	case "queue":
 		if len(os.Args) < 3 {
-			return fmt.Errorf(noIdProvidedErr)
+			return fmt.Errorf(noIDProvidedErr)
 		}
 
 		id := os.Args[2]
@@ -113,7 +113,7 @@ func Parse() error {
 		player.Start(urls)
 	case "scrobble":
 		if len(os.Args) < 3 {
-			return fmt.Errorf(noIdProvidedErr)
+			return fmt.Errorf(noIDProvidedErr)
 		}
 
 		id := os.Args[2]
@@ -134,7 +134,7 @@ func Parse() error {
 		}
 		wg.Wait()
 	default:
-		return fmt.Errorf(invalidSubcommandRootErr)
+		return fmt.Errorf(invalidSubCmdErr)
 	}
 	return nil
 }
