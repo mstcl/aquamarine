@@ -1,3 +1,6 @@
+// Handles hashing
+// Taken from stmps
+// https://github.com/spezifisch/stmps
 package subsonic
 
 import (

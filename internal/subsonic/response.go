@@ -1,3 +1,4 @@
+// Handles responses and their json structs
 package subsonic
 
 import (
@@ -135,6 +136,7 @@ type Response struct {
 	SubsonicResponse SubsonicResponse `json:"subsonic-response"`
 }
 
+// Get and unmarshal http response
 func (c *SubsonicConnection) getResponse(requestUrl string) (*Response, error) {
 	res, err := http.Get(requestUrl)
 	if err != nil {

@@ -1,3 +1,4 @@
+// Handles CLI interaction
 package cli
 
 import (
@@ -7,13 +8,13 @@ import (
 	"sync"
 
 	"github.com/mstcl/aquamarine/internal/config"
-	"github.com/mstcl/aquamarine/internal/files"
+	"github.com/mstcl/aquamarine/internal/file"
 	"github.com/mstcl/aquamarine/internal/player"
 	"github.com/mstcl/aquamarine/internal/subsonic"
 )
 
 func Parse() error {
-	cFile := flag.String("c", files.Config, "Path to configuration file")
+	cFile := flag.String("c", file.Config, "Path to configuration file")
 
 	invalidSubcommandRootErr := "[ERROR] Usage: aquamarine [artists|albums|songs|scrobble|queue]"
 	invalidSubcommandChildErr := "[ERROR] Allowed subcommand: ls"

@@ -1,4 +1,4 @@
-// Make listings of artists and albums
+// Handles listings of artists and albums
 package subsonic
 
 import (

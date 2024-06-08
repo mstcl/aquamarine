@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Use fzf to first query the artist.
+#
+# On accept of an artist, query the artist's album Here, we can queue/scrobble
+# the whole album, or on accept query the album's tracks, which we can also
+# queue individually.
+
 set -eEuo pipefail
 
 artist=$(aquamarine artists ls |

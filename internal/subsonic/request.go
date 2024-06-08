@@ -1,4 +1,6 @@
 // Main request API calls for interacting with Subsonic
+// Loosely based on stmps
+// https://github.com/spezifisch/stmps
 package subsonic
 
 import (
@@ -8,12 +10,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/mstcl/aquamarine/internal/files"
-	"github.com/mstcl/aquamarine/internal/utils"
+	"github.com/mstcl/aquamarine/internal/file"
 )
 
 type SubsonicConnection struct {
-	// directoryCache map[string]Response
 	Username string
 	Password string
 	Host     string
@@ -53,7 +53,7 @@ func handleResponse[T any, F Formatter[T]](
 		return nil, err
 	}
 
-	if err := utils.CacheFile(buf.Bytes(), loc); err != nil {
+	if err := file.Cache(buf.Bytes(), loc); err != nil {
 		return nil, err
 	}
 
@@ -97,11 +97,12 @@ func handleCache[T any, F Formatter[T]](
 
 type fn func(string) string
 
+// Generic function to handle a slice of songs
 func handleSongs(
 	id string,
 	f fn,
 ) ([]string, error) {
-	loc := files.ConstructCachePath(id)
+	loc := file.GetCachePath(id)
 
 	songs := []Song{}
 
@@ -147,8 +148,8 @@ func (c *SubsonicConnection) Scrobble(id string) (err error) {
 //
 // Always cache, set TTL 1 week. Force refetch with --sync
 func (c *SubsonicConnection) GetArtists(sync bool, displayRaw bool, quiet bool) ([]byte, error) {
-	loc := files.IndexCacheLoc
-	shouldSync, err := utils.ShouldSync(loc)
+	loc := file.IndexCacheLoc
+	shouldSync, err := file.ShouldSync(loc)
 	if err != nil {
 		return nil, err
 	}
@@ -181,8 +182,8 @@ func (c *SubsonicConnection) GetArtists(sync bool, displayRaw bool, quiet bool) 
 //
 // Always cache, set TTL 1 week. Force refetch with --sync
 func (c *SubsonicConnection) GetArtist(id string, sync bool, displayRaw bool, quiet bool) ([]byte, error) {
-	loc := files.ConstructCachePath(id)
-	shouldSync, err := utils.ShouldSync(loc)
+	loc := file.GetCachePath(id)
+	shouldSync, err := file.ShouldSync(loc)
 	if err != nil {
 		return nil, err
 	}
@@ -215,8 +216,8 @@ func (c *SubsonicConnection) GetArtist(id string, sync bool, displayRaw bool, qu
 //
 // Always cache, set TTL 1 week. Force refetch with --sync
 func (c *SubsonicConnection) GetAlbum(id string, sync bool, displayRaw bool, quiet bool) ([]byte, error) {
-	loc := files.ConstructCachePath(id)
-	shouldSync, err := utils.ShouldSync(loc)
+	loc := file.GetCachePath(id)
+	shouldSync, err := file.ShouldSync(loc)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +247,7 @@ func (c *SubsonicConnection) GetAlbum(id string, sync bool, displayRaw bool, qui
 //
 // The id is prefixed with `tr`, e.g. something like `tr-1293`
 // https://www.subsonic.org/pages/api.jsp#stream
-func (c *SubsonicConnection) constructPlayUrl(id string) string {
+func (c *SubsonicConnection) getPlayUrl(id string) string {
 	query := defaultQuery(c)
 	query.Set("id", id)
 
@@ -258,12 +259,12 @@ func (c *SubsonicConnection) constructPlayUrl(id string) string {
 // Else if just a track, return the track id as part of the url
 func (c *SubsonicConnection) GetSongUrls(id string) ([]string, error) {
 	if !isAlbum(id) {
-		return []string{c.constructPlayUrl(id)}, nil
+		return []string{c.getPlayUrl(id)}, nil
 	}
 	if _, err := c.GetAlbum(id, false, false, true); err != nil {
 		return nil, err
 	}
-	return handleSongs(id, c.constructPlayUrl)
+	return handleSongs(id, c.getPlayUrl)
 }
 
 // Given id, get song ids if album, else just return the id if track
@@ -278,6 +279,7 @@ func (c *SubsonicConnection) GetSongIds(id string) ([]string, error) {
 	return handleSongs(id, func(s string) string { return s })
 }
 
+// Returns true if a Subsonic id is an album
 func isAlbum(id string) bool {
 	prefix := strings.Split(id, "-")
 	return prefix[0] == "al"

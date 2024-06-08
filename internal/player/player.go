@@ -1,3 +1,4 @@
+// Runs a goroutine to execute MPV and queue songs
 package player
 
 import (
