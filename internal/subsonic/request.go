@@ -33,51 +33,55 @@ func defaultQuery(c *SubsonicConnection) url.Values {
 	return query
 }
 
-type Formatter[T any] interface {
-	func(T) []byte
+type Formatter[T any, C bool, I bool] interface {
+	func(T, C, I) string
 }
 
 // Generic function to handle response
-func handleResponse[T any, F Formatter[T]](
+func handleResponse[T any, C bool, I bool, F Formatter[T, C, I]](
 	loc string,
 	displayRaw bool,
 	quiet bool,
 	fn F,
 	data T,
-) ([]byte, error) {
+	color C,
+	interactive I,
+) (string, error) {
 	buf := new(bytes.Buffer)
 	bufEncoder := json.NewEncoder(buf)
 	bufEncoder.SetIndent("", "  ")
 
 	if err := bufEncoder.Encode(data); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if err := file.Cache(buf.Bytes(), loc); err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if quiet {
-		return nil, nil
+		return "", nil
 	}
 
 	if displayRaw {
-		return buf.Bytes(), nil
+		return buf.String(), nil
 	}
 
-	return fn(data), nil
+	return fn(data, color, interactive), nil
 }
 
 // Generic function to handle cache data
-func handleCache[T any, F Formatter[T]](
+func handleCache[T any, C bool, I bool, F Formatter[T, C, I]](
 	loc string,
 	displayRaw bool,
 	fn F,
 	data T,
-) ([]byte, error) {
+	color C,
+	interactive I,
+) (string, error) {
 	file, err := os.Open(loc)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	defer file.Close()
@@ -85,14 +89,14 @@ func handleCache[T any, F Formatter[T]](
 	if displayRaw {
 		buf := new(bytes.Buffer)
 		_, _ = buf.ReadFrom(file)
-		return buf.Bytes(), nil
+		return buf.String(), nil
 	}
 
 	if err := json.NewDecoder(file).Decode(&data); err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return fn(data), nil
+	return fn(data, color, interactive), nil
 }
 
 type fn func(string) string
@@ -147,11 +151,13 @@ func (c *SubsonicConnection) Scrobble(id string) (err error) {
 // https://www.subsonic.org/pages/api.jsp#getArtists
 //
 // Always cache, set TTL 1 week. Force refetch with --sync
-func (c *SubsonicConnection) GetArtists(sync bool, displayRaw bool, quiet bool) ([]byte, error) {
+func (c *SubsonicConnection) GetArtists(
+	sync bool, displayRaw bool, quiet bool, color bool, interactive bool,
+) (string, error) {
 	loc := file.IndexCacheLoc
 	shouldSync, err := file.ShouldSync(loc)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	artists := []Artist{}
@@ -162,17 +168,17 @@ func (c *SubsonicConnection) GetArtists(sync bool, displayRaw bool, quiet bool) 
 
 		res, err := c.getResponse(requestUrl)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		// Transform into FlattenArtists
 		indexes := res.SubsonicResponse.Artists
 		artists = indexes.ExtractArtists()
 
-		return handleResponse(loc, displayRaw, quiet, ListArtists, artists)
+		return handleResponse(loc, displayRaw, quiet, FormatArtists, artists, color, interactive)
 	}
 
-	return handleCache(loc, displayRaw, ListArtists, artists)
+	return handleCache(loc, displayRaw, FormatArtists, artists, color, interactive)
 }
 
 // Get albums from an artist
@@ -181,11 +187,13 @@ func (c *SubsonicConnection) GetArtists(sync bool, displayRaw bool, quiet bool) 
 // # The id string should have an `ar-` prefix
 //
 // Always cache, set TTL 1 week. Force refetch with --sync
-func (c *SubsonicConnection) GetArtist(id string, sync bool, displayRaw bool, quiet bool) ([]byte, error) {
+func (c *SubsonicConnection) GetArtist(
+	id string, sync bool, displayRaw bool, quiet bool, color bool, interactive bool,
+) (string, error) {
 	loc := file.GetCachePath(id)
 	shouldSync, err := file.ShouldSync(loc)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	albums := []Album{}
@@ -197,16 +205,16 @@ func (c *SubsonicConnection) GetArtist(id string, sync bool, displayRaw bool, qu
 
 		res, err := c.getResponse(requestUrl)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		// Encode and cache response
 		albums := res.SubsonicResponse.Artist.Albums
 
-		return handleResponse(loc, displayRaw, quiet, ListAlbums, albums)
+		return handleResponse(loc, displayRaw, quiet, FormatAlbums, albums, color, interactive)
 	}
 
-	return handleCache(loc, displayRaw, ListAlbums, albums)
+	return handleCache(loc, displayRaw, FormatAlbums, albums, color, interactive)
 }
 
 // Get songs from an album
@@ -215,11 +223,13 @@ func (c *SubsonicConnection) GetArtist(id string, sync bool, displayRaw bool, qu
 // # The id string should have an `al-` prefix
 //
 // Always cache, set TTL 1 week. Force refetch with --sync
-func (c *SubsonicConnection) GetAlbum(id string, sync bool, displayRaw bool, quiet bool) ([]byte, error) {
+func (c *SubsonicConnection) GetAlbum(
+	id string, sync bool, displayRaw bool, quiet bool, color bool, interactive bool,
+) (string, error) {
 	loc := file.GetCachePath(id)
 	shouldSync, err := file.ShouldSync(loc)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	songs := []Song{}
@@ -231,16 +241,16 @@ func (c *SubsonicConnection) GetAlbum(id string, sync bool, displayRaw bool, qui
 
 		res, err := c.getResponse(requestUrl)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 
 		// Encode and cache response
 		songs := res.SubsonicResponse.Album.Songs
 
-		return handleResponse(loc, displayRaw, quiet, ListSongs, songs)
+		return handleResponse(loc, displayRaw, quiet, FormatSongs, songs, color, interactive)
 	}
 
-	return handleCache(loc, displayRaw, ListSongs, songs)
+	return handleCache(loc, displayRaw, FormatSongs, songs, color, interactive)
 }
 
 // Formats and constructs stream url, ignoring directories
@@ -261,7 +271,7 @@ func (c *SubsonicConnection) GetSongUrls(id string) ([]string, error) {
 	if !isAlbum(id) {
 		return []string{c.getPlayUrl(id)}, nil
 	}
-	if _, err := c.GetAlbum(id, false, false, true); err != nil {
+	if _, err := c.GetAlbum(id, false, false, true, false, false); err != nil {
 		return nil, err
 	}
 	return handleSongs(id, c.getPlayUrl)
@@ -273,7 +283,7 @@ func (c *SubsonicConnection) GetSongIds(id string) ([]string, error) {
 		return []string{id}, nil
 	}
 	// Fetch and cache if not done so
-	if _, err := c.GetAlbum(id, false, false, true); err != nil {
+	if _, err := c.GetAlbum(id, false, false, true, false, false); err != nil {
 		return nil, err
 	}
 	return handleSongs(id, func(s string) string { return s })

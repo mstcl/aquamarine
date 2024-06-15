@@ -6,17 +6,19 @@ import (
 	"fmt"
 	"os"
 	"sync"
+	"text/tabwriter"
 
 	"github.com/mstcl/aquamarine/internal/config"
 	"github.com/mstcl/aquamarine/internal/file"
 	"github.com/mstcl/aquamarine/internal/player"
 	"github.com/mstcl/aquamarine/internal/subsonic"
+	"github.com/mstcl/aquamarine/internal/tty"
 )
 
 func Parse() error {
 	configFile := flag.String("c", file.Config, "Path to configuration file")
 
-	invalidSubCmdErr := "[ERROR] Usage: aquamarine [artists|albums|songs|scrobble|queue]"
+	invalidSubCmdErr := "[ERROR] Usage: aquamarine [artists|albums|songs|scrobble|queue|interactive]"
 	invalidSubCmdLsErr := "[ERROR] Allowed subcommand: ls"
 	noIDProvidedErr := "[ERROR] Please provide an id as an argument."
 
@@ -24,7 +26,11 @@ func Parse() error {
 	lsCmd := flag.NewFlagSet("ls", flag.ExitOnError)
 	forceSync := lsCmd.Bool("s", false, "Sync the cache")
 	displayRaw := lsCmd.Bool("j", false, "Format output as JSON")
+	noColor := lsCmd.Bool("n", false, "Print without ANSI color")
 	quiet := lsCmd.Bool("q", false, "Don't print to stdout")
+
+	interactiveCmd := flag.NewFlagSet("interactive", flag.ExitOnError)
+	interactiveForceSync := interactiveCmd.Bool("s", false, "Sync the cache")
 
 	if len(os.Args) < 2 {
 		return fmt.Errorf(invalidSubCmdErr)
@@ -43,6 +49,65 @@ func Parse() error {
 
 	// Command tree
 	switch os.Args[1] {
+	case "interactive":
+		if err := interactiveCmd.Parse(os.Args[2:]); err != nil {
+			return err
+		}
+
+		artists, err := c.GetArtists(*interactiveForceSync, false, false, !*noColor, true)
+		if err != nil {
+			return err
+		}
+
+		args := tty.FzfDefaultArgs()
+		artist, err := tty.FzfWrapper(artists, tty.ArtistPreview, tty.ArtistBinds, args)
+		if err != nil {
+			return err
+		}
+
+		if len(artist) == 0 {
+			return nil
+		}
+
+		albums, err := c.GetArtist(
+			artist[:len(artist)-1], *interactiveForceSync, false, false, !*noColor, true,
+		)
+		if err != nil {
+			return err
+		}
+
+		album, err := tty.FzfWrapper(albums, tty.AlbumPreview, tty.AlbumBinds, args)
+		if err != nil {
+			return err
+		}
+
+		if len(album) == 0 {
+			return nil
+		}
+
+		songs, err := c.GetAlbum(
+			album[:len(album)-1], *interactiveForceSync, false, false, !*noColor, true,
+		)
+		if err != nil {
+			return err
+		}
+
+		args = append(args, "--with-nth", "2,3")
+		song, err := tty.FzfWrapper(songs, tty.SongPreview, tty.SongBinds, args)
+		if err != nil {
+			return err
+		}
+
+		if len(song) == 0 {
+			return nil
+		}
+
+		urls, err := c.GetSongUrls(song[:len(song)-1])
+		if err != nil {
+			return err
+		}
+
+		player.Start(urls)
 	case "artists":
 		if len(os.Args) < 3 {
 			return fmt.Errorf(invalidSubCmdLsErr)
@@ -50,12 +115,14 @@ func Parse() error {
 
 		_ = lsCmd.Parse(os.Args[3:])
 
-		artists, err := c.GetArtists(*forceSync, *displayRaw, *quiet)
+		artists, err := c.GetArtists(*forceSync, *displayRaw, *quiet, !*noColor, false)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("%s\n", artists)
+		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+		fmt.Fprintln(writer, artists)
+		writer.Flush()
 	case "albums":
 		if len(os.Args) < 3 {
 			return fmt.Errorf(invalidSubCmdLsErr)
