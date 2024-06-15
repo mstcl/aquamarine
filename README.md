@@ -7,7 +7,7 @@ A minimal Subsonic CLI utility
 * Query a Subsonic library for artists, albums, and tracks.
 * Queue tracks and albums to a detached headless [mpv](https://mpv.io/) instance.
 * Scrobble tracks and albums (manually).
-* Allow easy integration with [fzf](https://github.com/junegunn/fzf) (see [Integration](#integration)).
+* Allow easy integration with [fzf](https://github.com/junegunn/fzf) (see [Usage](#usage)).
 
 ## What it doesn't do
 
@@ -32,7 +32,7 @@ host: "https://example.org"        # subsonic endpoint (without `/rest`)
 
 ## Usage
 
-**Listing**:
+**Manual listing**:
 
 `aquamarine -c <path_to_config> [artists|albums|songs] ls [<empty>|<album ID>|<track ID>]`
 
@@ -53,54 +53,16 @@ Usage of ls:
 
 `aquamarine -c <path_to_config> queue <album/track ID>`
 
-## Examples
+**Fzf**:
 
-### Listing artists
-
-No arguments are excepted, as this lists all the artists in your library. For example:
-
-```sh
-$ aquamarine artists ls
-```
-
-The default output fields are `artist id`, `artist name`, `album count` (tab delimited).
-
-### Listing albums
-
-The argument takes an artist id. For example:
-
-```sh
-$ aquamarine albums ls "ar-182"
-```
-
-The default output fields are `album id`, `album name`, `album year`, `album
-genre`, `track count`, `duration`, `artist id` (tab delimited).
-
-### Listing tracks
-
-The argument takes an album id. For example:
-
-```sh
-$ aquamarine songs ls "al-462"
-```
-
-The default output fields are `track id`, `track name`, `track number`, `disc
-number`, `file format`, `bit rate`, `duration`, `file size`, `album id` (tab
-delimited).
-
-## Integration
-
-### fzf
-
-See [./scripts/fzf_picker.sh](./scripts/fzf_picker.sh) for a sample script
-using fzf as a simple interactive browser.
+`aquamarine -c <path_to_config> interactive`
 
 This allows you to select an artist and display their albums, the latter you
 can queue with `ctrl-a` and scrobble with `ctrl-s`. Alternative selecting an
 album displays the tracks, which you can individually queue by accepting them
 (`enter`) or scrobble with `ctrl-s`.
 
-### playerctl
+## Integration with playerctl
 
 With [mpv-mpris](https://github.com/hoyon/mpv-mpris), we can use
 [playerctl](https://github.com/altdesktop/playerctl) to play/pause, go to next
