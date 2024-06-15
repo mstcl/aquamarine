@@ -138,12 +138,14 @@ func Parse() error {
 
 		id := lsCmd.Args()[0]
 
-		albums, err := c.GetArtist(id, *forceSync, *displayRaw, *quiet)
+		albums, err := c.GetArtist(id, *forceSync, *displayRaw, *quiet, !*noColor, false)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("%s\n", albums)
+		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+		fmt.Fprintln(writer, albums)
+		writer.Flush()
 	case "songs":
 		if len(os.Args) < 3 {
 			return fmt.Errorf(invalidSubCmdLsErr)
@@ -159,12 +161,14 @@ func Parse() error {
 
 		id := lsCmd.Args()[0]
 
-		songs, err := c.GetAlbum(id, *forceSync, *displayRaw, *quiet)
+		songs, err := c.GetAlbum(id, *forceSync, *displayRaw, *quiet, !*noColor, false)
 		if err != nil {
 			return err
 		}
 
-		fmt.Printf("%s\n", songs)
+		writer := tabwriter.NewWriter(os.Stdout, 0, 8, 1, '\t', tabwriter.AlignRight)
+		fmt.Fprintln(writer, songs)
+		writer.Flush()
 	case "queue":
 		if len(os.Args) < 3 {
 			return fmt.Errorf(noIDProvidedErr)
