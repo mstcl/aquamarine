@@ -26,11 +26,11 @@ func Parse() error {
 	lsCmd := flag.NewFlagSet("ls", flag.ExitOnError)
 	forceSync := lsCmd.Bool("s", false, "Sync the cache")
 	displayRaw := lsCmd.Bool("j", false, "Format output as JSON")
-	noColor := lsCmd.Bool("n", false, "Print without ANSI color")
 	quiet := lsCmd.Bool("q", false, "Don't print to stdout")
 
 	interactiveCmd := flag.NewFlagSet("interactive", flag.ExitOnError)
 	interactiveForceSync := interactiveCmd.Bool("s", false, "Sync the cache")
+	noColor := interactiveCmd.Bool("n", false, "Print without ANSI color")
 
 	if len(os.Args) < 2 {
 		return fmt.Errorf(invalidSubCmdErr)

@@ -63,6 +63,14 @@ Usage of ls:
 
 `aquamarine -c <path_to_config> interactive`
 
+Flags:
+
+```
+Usage of interactive:
+  -n	Print without ANSI color
+  -s	Sync the cache
+```
+
 This allows you to select an artist and display their albums, the latter you
 can queue with `ctrl-a` and scrobble with `ctrl-s`. Alternative selecting an
 album displays the tracks, which you can individually queue by accepting them
