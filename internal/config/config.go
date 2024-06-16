@@ -3,30 +3,34 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	Username    string `yaml:"username"`
-	Password    string `yaml:"password"`
-	PasswordCmd string `yaml:"password_cmd"`
-	Host        string `yaml:"host"`
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	PasswordCmd string `json:"password_cmd"`
+	Host        string `json:"host"`
 }
 
 func Parse(f string) (*Config, error) {
-	b, err := os.ReadFile(f)
+	file, err := os.Open(f)
 	if err != nil {
 		return nil, fmt.Errorf("reading config: %w", err)
 	}
 
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+
 	c := Config{}
-	if err := yaml.Unmarshal(b, &c); err != nil {
-		return nil, fmt.Errorf("parsing config: %w", err)
+
+	if err := decoder.Decode(&c); err != nil {
+		return nil, err
 	}
 
 	if len(c.Username) == 0 {

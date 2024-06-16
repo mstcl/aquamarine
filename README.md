@@ -4,31 +4,37 @@ A minimal Subsonic CLI utility
 
 ## What it does
 
-* Query a Subsonic library for artists, albums, and tracks.
-* Queue tracks and albums to a detached headless [mpv](https://mpv.io/) instance.
-* Scrobble tracks and albums (manually).
-* Allow easy integration with [fzf](https://github.com/junegunn/fzf) (see [Usage](#usage)).
+- Query a Subsonic library for artists, albums, and tracks.
+- Queue tracks and albums to a detached headless [mpv](https://mpv.io/) instance.
+- Scrobble tracks and albums (manually).
+- Allow easy integration with [fzf](https://github.com/junegunn/fzf) (see [Usage](#usage)).
 
 ## What it doesn't do
 
-* Act as a background daemon or music player.
-* Provide an interactive interface for browsing.
-* Scrobble tracks automatically.
+- Act as a background daemon or music player.
+- Provide an interactive interface for browsing.
+- Scrobble tracks automatically.
 
 ## Configuration
 
 By default, configuration is expected to live under
-`$XDG_CONFIG_HOME/aquamarine/config.yml`. Override this with `aquamarine -c
-<path_to_config> ...`
+`$XDG_CONFIG_HOME/aquamarine/config.json`. Override this with `aquamarine -c <path_to_config> ...`
 
 Available fields:
 
-```yaml
-username: "user"                   # subsonic username
-password: "password"               # plain text subsonic password
-password_cmd: "echo password"      # alternative a shell command that returns the password to stdout
-host: "https://example.org"        # subsonic endpoint (without `/rest`)
+```json
+{
+  "username": "user",
+  "password": "password",
+  "password_cmd": "echo password",
+  "host": "https://example.org"
+}
 ```
+
+- `username`: subsonic username
+- `password`: plain text subsonic password
+- `password_cmd`: alternative a shell command that returns the password to stdout
+- `host`: subsonic endpoint (without `/rest`)
 
 ## Usage
 
