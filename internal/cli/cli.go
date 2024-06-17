@@ -17,6 +17,7 @@ import (
 
 func Parse() error {
 	configFile := flag.String("c", file.Config, "Path to configuration file")
+	flag.Parse()
 
 	invalidSubCmdErr := "[ERROR] Usage: aquamarine [artists|albums|songs|scrobble|queue|interactive]"
 	invalidSubCmdLsErr := "[ERROR] Allowed subcommand: ls"
