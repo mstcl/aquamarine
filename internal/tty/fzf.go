@@ -43,7 +43,7 @@ var SongPreview string = "echo 'ID: {1}\nTrack: {2}/{4}\nType: {5}\nBit-rate: {6
 func FzfDefaultArgs() []string {
 	return []string{
 		"--with-nth", "2",
-		"--preview-window", "nohidden:border-sharp:right:50%",
+		"--preview-window", "nohidden:border-sharp:down:30%",
 		"--height", "100%",
 		"--min-height", "30",
 		"--ansi",
